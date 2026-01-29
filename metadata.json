@@ -1,0 +1,8 @@
+
+{
+  "name": "M.y.L Construcción Premium Portal",
+  "description": "A high-end construction company web portal featuring a projects gallery, customer reviews, an admin panel, and an AI-powered assistant.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
