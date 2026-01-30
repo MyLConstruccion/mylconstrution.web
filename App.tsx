@@ -6,7 +6,6 @@ import Services from './components/Services';
 import Gallery from './components/Gallery';
 import Reviews from './components/Reviews';
 import AdminPanel from './components/AdminPanel';
-// Se eliminó la importación del Chatbot
 import Footer from './components/Footer';
 import { CONTACT_INFO, Icons } from './constants';
 
@@ -40,7 +39,6 @@ const App: React.FC = () => {
 
         <Footer />
         
-        {/* Botón Flotante de WhatsApp */}
         <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3 pointer-events-none">
           <a 
             href={`https://wa.me/${CONTACT_INFO.whatsapp.replace(/\D/g, '')}?text=Hola! Vengo desde su sitio web y me gustaría solicitar un presupuesto para una obra.`}
@@ -56,8 +54,6 @@ const App: React.FC = () => {
             </span>
           </a>
         </div>
-
-        {/* Se eliminó el componente Chatbot de aquí */}
       </div>
     </HashRouter>
   );
