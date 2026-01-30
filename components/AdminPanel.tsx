@@ -56,7 +56,7 @@ const AdminPanel: React.FC = () => {
   };
 
   const removeExistingMedia = (index: number) => {
-    if (window.confirm('¿Estás seguro de que quieres quitar este archivo de la obra?')) {
+    if (window.confirm('¿Estás seguro de que quieres quitar este archivo?')) {
       setFormData(prev => ({
         ...prev,
         media: prev.media.filter((_, i) => i !== index)
@@ -90,13 +90,17 @@ const AdminPanel: React.FC = () => {
     const mediaList: MediaItem[] = [...formData.media];
 
     try {
+      // Subida de archivos a Cloudinary uno por uno
       for (let i = 0; i < selectedFiles.length; i++) {
-        setUploadProgress(`Subiendo archivo nuevo ${i + 1} de ${selectedFiles.length}...`);
+        setUploadProgress(`Subiendo archivo ${i + 1} de ${selectedFiles.length}...`);
         const { file } = selectedFiles[i];
-        const url = await uploadFile(file);
-        if (url) {
+        
+        // Esta función ahora usa la API REST de Cloudinary con f_auto,q_auto
+        const optimizedUrl = await uploadFile(file);
+        
+        if (optimizedUrl) {
           const type = file.type.startsWith('video') ? 'video' : 'image';
-          mediaList.push({ url, type });
+          mediaList.push({ url: optimizedUrl, type });
         }
       }
 
@@ -110,7 +114,7 @@ const AdminPanel: React.FC = () => {
         media: mediaList
       };
 
-      setUploadProgress('Guardando...');
+      setUploadProgress('Guardando en Base de Datos...');
       
       let result;
       if (editingId) {
@@ -171,7 +175,6 @@ const AdminPanel: React.FC = () => {
         </div>
 
         <div className="grid lg:grid-cols-12 gap-12">
-          {/* Columna Izquierda: Formulario */}
           <div className="lg:col-span-5 bg-[#111] p-10 rounded-[4rem] border border-white/5 h-fit shadow-2xl">
             <h3 className="text-2xl font-black mb-10 uppercase">
                 {editingId ? 'Editar Obra' : 'Nueva Obra'}
@@ -191,11 +194,19 @@ const AdminPanel: React.FC = () => {
                 <input type="date" className="bg-black border border-white/10 rounded-2xl px-6 py-4 font-bold" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
               </div>
 
+              {/* Input de Galería Nativa - Mantenido al 100% */}
               <div className="bg-black/50 p-8 rounded-[2.5rem] border-2 border-dashed border-white/10 hover:border-[#fbbf24] transition-all text-center">
                 <p className="text-[#fbbf24] text-[10px] font-black uppercase mb-4">Añadir Fotos o Videos:</p>
-                <input type="file" multiple accept="image/*,video/*" onChange={handleFileChange} className="hidden" id="file-upload" />
+                <input 
+                    type="file" 
+                    multiple 
+                    accept="image/*,video/*" 
+                    onChange={handleFileChange} 
+                    className="hidden" 
+                    id="file-upload" 
+                />
                 <label htmlFor="file-upload" className="inline-block px-8 py-3 bg-white/5 text-[10px] font-black uppercase rounded-full border border-white/10 cursor-pointer hover:bg-white/10">
-                  Seleccionar
+                  Seleccionar desde Galería
                 </label>
               </div>
 
@@ -221,7 +232,7 @@ const AdminPanel: React.FC = () => {
               </div>
 
               <div className="flex gap-4">
-                <button disabled={loading} className="flex-1 py-6 bg-[#fbbf24] text-black rounded-3xl font-black uppercase text-xs hover:scale-[1.02] transition-transform">
+                <button disabled={loading} className="flex-1 py-6 bg-[#fbbf24] text-black rounded-3xl font-black uppercase text-xs hover:scale-[1.02] transition-transform disabled:opacity-50">
                     {loading ? uploadProgress : (editingId ? 'Guardar Cambios' : 'Publicar Ahora')}
                 </button>
                 {editingId && (
@@ -231,7 +242,6 @@ const AdminPanel: React.FC = () => {
             </form>
           </div>
 
-          {/* Columna Derecha: Listado */}
           <div className="lg:col-span-7 space-y-4 max-h-[800px] overflow-y-auto pr-4 custom-scrollbar">
             {projects.length === 0 ? (
                <div className="text-center py-20 text-white/20 uppercase font-black">No hay proyectos</div>
