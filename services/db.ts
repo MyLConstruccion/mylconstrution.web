@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { Project, Review } from '../types';
 
@@ -64,7 +63,6 @@ export const addProject = async (project: Omit<Project, 'id'>): Promise<Project 
   }
 };
 
-// --- NUEVA FUNCIÓN PARA MODIFICAR ---
 export const updateProject = async (id: string, project: Omit<Project, 'id'>): Promise<Project | null> => {
   try {
     const { data, error } = await supabase
@@ -88,7 +86,6 @@ export const updateProject = async (id: string, project: Omit<Project, 'id'>): P
     return null;
   }
 };
-// ------------------------------------
 
 export const deleteProject = async (id: string) => {
   try {
@@ -99,24 +96,40 @@ export const deleteProject = async (id: string) => {
   }
 };
 
+// --- FUNCIÓN CORREGIDA PARA CLOUDINARY ---
 export const uploadFile = async (file: File): Promise<string | null> => {
+  const CLOUD_NAME = 'dllm8ggob'; // Tu cuenta de la captura
+  const UPLOAD_PRESET = 'Matita_web'; // Tu preset optimizado
+
   try {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    if (!response.ok) throw new Error('Error en la subida a Cloudinary');
+
+    const data = await response.json();
     
-    const { error: uploadError } = await supabase.storage
-      .from('media') 
-      .upload(fileName, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage.from('media').getPublicUrl(fileName);
-    return data.publicUrl;
+    // Aplicamos f_auto y q_auto para que las fotos de tu papá no pesen nada
+    if (data.secure_url) {
+      return data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
+    }
+    
+    return null;
   } catch (error: any) {
-    console.error('Storage Error:', error);
+    console.error('Cloudinary Error:', error);
     return null;
   }
 };
+// -----------------------------------------
 
 export const getReviews = async (): Promise<Review[]> => {
   try {
